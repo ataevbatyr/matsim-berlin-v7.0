@@ -13,7 +13,7 @@ import org.matsim.application.MATSimAppCommand;
 import org.matsim.application.MATSimApplication;
 import org.matsim.application.options.SampleOptions;
 import org.matsim.application.prepare.CreateLandUseShp;
-import org.matsim.application.prepare.freight.tripExtraction.ExtractRelevantFreightTrips;
+import org.matsim.application.prepare.longDistanceFreightGER.tripExtraction.ExtractRelevantFreightTrips;
 import org.matsim.application.prepare.network.CleanNetwork;
 import org.matsim.application.prepare.network.CreateNetworkFromSumo;
 import org.matsim.application.prepare.network.params.ApplyNetworkParams;
@@ -24,7 +24,6 @@ import org.matsim.contrib.bicycle.BicycleConfigGroup;
 import org.matsim.contrib.cadyts.car.CadytsCarModule;
 import org.matsim.contrib.cadyts.car.CadytsContext;
 import org.matsim.contrib.cadyts.general.CadytsScoring;
-import org.matsim.contrib.locationchoice.frozenepsilons.FrozenTastes;
 import org.matsim.contrib.locationchoice.frozenepsilons.FrozenTastesConfigGroup;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
@@ -127,7 +126,7 @@ public class RunOpenBerlinCalibration extends MATSimApplication {
 	private Integer planIndex;
 
 	public RunOpenBerlinCalibration() {
-		super("input/v6.4/berlin-v6.4.config.xml");
+		super(ConfigUtils.loadConfig("input/v6.4/berlin-v6.4.config.xml"));
 	}
 
 	/**
@@ -198,7 +197,7 @@ public class RunOpenBerlinCalibration extends MATSimApplication {
 			config.counts().setCountsScaleFactor(sampleSize * countScale);
 			config.plans().setInputFile(sample.adjustName(config.plans().getInputFile()));
 
-			sw.sampleSize = sampleSize * countScale;
+			sw.setSampleSize(sampleSize * countScale);
 		}
 
 		// Routes are not relaxed yet, and there should not be too heavy congestion
@@ -212,7 +211,7 @@ public class RunOpenBerlinCalibration extends MATSimApplication {
 			config.transit().setUseTransit(false);
 
 			// Disable dashboards, for all car runs, these take too many resources
-			sw.defaultDashboards = SimWrapperConfigGroup.Mode.disabled;
+			sw.setDefaultDashboards(SimWrapperConfigGroup.DefaultDashboardsMode.disabled);
 
 			// Only car and ride will be network modes, ride is not simulated on the network though
 			config.routing().setNetworkModes(List.of(TransportMode.car, TransportMode.ride));
@@ -249,11 +248,12 @@ public class RunOpenBerlinCalibration extends MATSimApplication {
 
 		if (mode == CalibrationMode.locationChoice) {
 
-			config.replanning().addStrategySettings(new ReplanningConfigGroup.StrategySettings()
-				.setStrategyName(FrozenTastes.LOCATION_CHOICE_PLAN_STRATEGY)
-				.setWeight(weight)
-				.setSubpopulation("person")
-			);
+//			since version 2025.0 frozen tastes cannot be simulated anymore apparently
+//			config.replanning().addStrategySettings(new ReplanningConfigGroup.StrategySettings()
+//				.setStrategyName(FrozenTastes.LOCATION_CHOICE_PLAN_STRATEGY)
+//				.setWeight(weight)
+//				.setSubpopulation("person")
+//			);
 
 			config.replanning().addStrategySettings(new ReplanningConfigGroup.StrategySettings()
 				.setStrategyName(DefaultPlanStrategiesModule.DefaultStrategy.ReRoute)
@@ -410,76 +410,76 @@ public class RunOpenBerlinCalibration extends MATSimApplication {
 	@Override
 	protected void prepareControler(Controler controler) {
 
-		if (mode == CalibrationMode.locationChoice) {
-			FrozenTastes.configure(controler);
-
-			controler.addOverridingModule(new AbstractModule() {
-				@Override
-				public void install() {
-					binder().bind(new TypeLiteral<StrategyChooser<Plan, Person>>() {
-					}).toInstance(new ForceInnovationStrategyChooser<>(5, ForceInnovationStrategyChooser.Permute.no));
-				}
-			});
-
-		} else if (mode == CalibrationMode.cadyts) {
-
-			controler.addOverridingModule(new CadytsCarModule());
-			controler.setScoringFunctionFactory(new ScoringFunctionFactory() {
-				@Inject
-				ScoringParametersForPerson parameters;
-				@Inject
-				private CadytsContext cadytsContext;
-
-				@Override
-				public ScoringFunction createNewScoringFunction(Person person) {
-					SumScoringFunction sumScoringFunction = new SumScoringFunction();
-
-					Config config = controler.getConfig();
-
-					// Not using the usual scoring, just cadyts + travel time
-					// final ScoringParameters params = parameters.getScoringParameters(person);
-					// sumScoringFunction.addScoringFunction(new CharyparNagelLegScoring(params, controler.getScenario().getNetwork()));
-
-					final CadytsScoring<Link> scoringFunction = new CadytsScoring<>(person.getSelectedPlan(), config, cadytsContext);
-					scoringFunction.setWeightOfCadytsCorrection(30 * config.scoring().getBrainExpBeta());
-					sumScoringFunction.addScoringFunction(scoringFunction);
-
-					return sumScoringFunction;
-				}
-			});
-
-			controler.addOverridingModule(new AbstractModule() {
-				@Override
-				public void install() {
-					binder().bind(new TypeLiteral<StrategyChooser<Plan, Person>>() {
-					}).toInstance(new ForceInnovationStrategyChooser<>((int) Math.ceil(1.0 / weight), ForceInnovationStrategyChooser.Permute.yes));
-				}
-			});
-
-		} else if (mode == CalibrationMode.routeChoice) {
-
-			controler.addOverridingModule(new AbstractModule() {
-				@Override
-				public void install() {
-					binder().bind(new TypeLiteral<StrategyChooser<Plan, Person>>() {
-					}).toInstance(new ForceInnovationStrategyChooser<>((int) Math.ceil(1.0 / weight), ForceInnovationStrategyChooser.Permute.yes));
-				}
-			});
-		}
-
-		controler.addOverridingModule(new AbstractModule() {
-			@Override
-			public void install() {
-				addControlerListenerBinding().to(ExtendExperiencedPlansListener.class);
-			}
-		});
-
-		controler.addOverridingModule(new OpenBerlinScenario.TravelTimeBinding(allCar));
-		controler.addOverridingModule(new SimWrapperModule());
-
-		if (ConfigUtils.hasModule(controler.getConfig(), AdvancedScoringConfigGroup.class)) {
-			controler.addOverridingModule(new AdvancedScoringModule());
-		}
+//		if (mode == CalibrationMode.locationChoice) {
+//			FrozenTastes.configure(controler);
+//
+//			controler.addOverridingModule(new AbstractModule() {
+//				@Override
+//				public void install() {
+//					binder().bind(new TypeLiteral<StrategyChooser<Plan, Person>>() {
+//					}).toInstance(new ForceInnovationStrategyChooser<>(5, ForceInnovationStrategyChooser.Permute.no));
+//				}
+//			});
+//
+//		} else if (mode == CalibrationMode.cadyts) {
+//
+//			controler.addOverridingModule(new CadytsCarModule());
+//			controler.setScoringFunctionFactory(new ScoringFunctionFactory() {
+//				@Inject
+//				ScoringParametersForPerson parameters;
+//				@Inject
+//				private CadytsContext cadytsContext;
+//
+//				@Override
+//				public ScoringFunction createNewScoringFunction(Person person) {
+//					SumScoringFunction sumScoringFunction = new SumScoringFunction();
+//
+//					Config config = controler.getConfig();
+//
+//					// Not using the usual scoring, just cadyts + travel time
+//					// final ScoringParameters params = parameters.getScoringParameters(person);
+//					// sumScoringFunction.addScoringFunction(new CharyparNagelLegScoring(params, controler.getScenario().getNetwork()));
+//
+//					final CadytsScoring<Link> scoringFunction = new CadytsScoring<>(person.getSelectedPlan(), config, cadytsContext);
+//					scoringFunction.setWeightOfCadytsCorrection(30 * config.scoring().getBrainExpBeta());
+//					sumScoringFunction.addScoringFunction(scoringFunction);
+//
+//					return sumScoringFunction;
+//				}
+//			});
+//
+//			controler.addOverridingModule(new AbstractModule() {
+//				@Override
+//				public void install() {
+//					binder().bind(new TypeLiteral<StrategyChooser<Plan, Person>>() {
+//					}).toInstance(new ForceInnovationStrategyChooser<>((int) Math.ceil(1.0 / weight), ForceInnovationStrategyChooser.Permute.yes));
+//				}
+//			});
+//
+//		} else if (mode == CalibrationMode.routeChoice) {
+//
+//			controler.addOverridingModule(new AbstractModule() {
+//				@Override
+//				public void install() {
+//					binder().bind(new TypeLiteral<StrategyChooser<Plan, Person>>() {
+//					}).toInstance(new ForceInnovationStrategyChooser<>((int) Math.ceil(1.0 / weight), ForceInnovationStrategyChooser.Permute.yes));
+//				}
+//			});
+//		}
+//
+//		controler.addOverridingModule(new AbstractModule() {
+//			@Override
+//			public void install() {
+//				addControlerListenerBinding().to(ExtendExperiencedPlansListener.class);
+//			}
+//		});
+//
+//		controler.addOverridingModule(new OpenBerlinScenario.TravelTimeBinding(allCar));
+//		controler.addOverridingModule(new SimWrapperModule());
+//
+//		if (ConfigUtils.hasModule(controler.getConfig(), AdvancedScoringConfigGroup.class)) {
+//			controler.addOverridingModule(new AdvancedScoringModule());
+//		}
 	}
 
 	@Override

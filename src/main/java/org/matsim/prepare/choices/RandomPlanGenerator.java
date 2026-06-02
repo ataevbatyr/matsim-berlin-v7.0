@@ -35,15 +35,15 @@ public class RandomPlanGenerator implements ChoiceGenerator {
 		// This changes the internal state to randomize the estimates
 		// random selection is biased because of mass conservation
 		// due to that, this class should not be used
-		for (Map.Entry<String, List<ModeEstimate>> entry : planModel.getEstimates().entrySet()) {
-			for (ModeEstimate est : entry.getValue()) {
-				double[] utils = est.getEstimates();
-				if (utils != null)
-					for (int i = 0; i < utils.length; i++) {
-						utils[i] = -rnd.nextDouble();
-					}
-			}
-		}
+//		for (Map.Entry<String, List<ModeEstimate>> entry : planModel.getEstimates().entrySet()) {
+//			for (ModeEstimate est : entry.getValue()) {
+//				double[] utils = est.getEstimates();
+//				if (utils != null)
+//					for (int i = 0; i < utils.length; i++) {
+//						utils[i] = -rnd.nextDouble();
+//					}
+//			}
+//		}
 
 		List<PlanCandidate> result = new ArrayList<>();
 		result.add(existing);

@@ -28,7 +28,7 @@ public class OpenBerlinBikeNetworkScenario extends OpenBerlinScenario {
 	private static final Logger log = LogManager.getLogger(OpenBerlinBikeNetworkScenario.class);
 
 	@CommandLine.Option(names = "--bike-handling", description = "Defines how transport mode bike is simulated in the berlin scenario.", required = true)
-	private BikeHandling bikeHandling = BikeHandling.ROUTED_ON_NETWORK_NOT_IN_QSIM;
+	private BikeHandling bikeHandling = BikeHandling.ROUTED_ON_NETWORK_IN_QSIM;
 	@CommandLine.Option(names = "--bike-pce", description = "PCE (passenger car equivalents) for bike, if simulated in qsim. Default seems to be 0.2.")
 	private double bikePce = 0.2;
 
@@ -97,6 +97,17 @@ public class OpenBerlinBikeNetworkScenario extends OpenBerlinScenario {
 	public Config prepareConfig(Config config) {
 		//		apply all config changes from base scenario class
 		super.prepareConfig(config);
+
+//		intercept all values different to defaults for this branch aka for this study/thesis
+		if (bikeHandling != BikeHandling.ROUTED_ON_NETWORK_IN_QSIM) {
+			log.fatal("For this study values of parameter bikeHandling other than {} are not allowed. Aborting!", BikeHandling.ROUTED_ON_NETWORK_IN_QSIM);
+			throw new IllegalStateException("");
+		}
+
+		if (bikePce != 0.2) {
+			log.fatal("For this study values of parameter bikePce other than {} are not allowed. Aborting!", 0.2);
+			throw new IllegalStateException("");
+		}
 
 		configChangesForBikeNetworkScenario(config, bikeHandling);
 		return config;

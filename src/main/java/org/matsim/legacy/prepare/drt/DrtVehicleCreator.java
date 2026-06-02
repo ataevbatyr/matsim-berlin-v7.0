@@ -43,6 +43,8 @@ import org.matsim.contrib.dvrp.fleet.DvrpVehicle;
 import org.matsim.contrib.dvrp.fleet.DvrpVehicleSpecification;
 import org.matsim.contrib.dvrp.fleet.FleetWriter;
 import org.matsim.contrib.dvrp.fleet.ImmutableDvrpVehicleSpecification;
+import org.matsim.contrib.dvrp.load.DvrpLoadType;
+import org.matsim.contrib.dvrp.load.IntegerLoadType;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.gbl.MatsimRandom;
@@ -163,7 +165,7 @@ public class DrtVehicleCreator {
 					.build());
 		}
 		String fileNameBase = vehiclesFilePrefix + amount + "vehicles-" + seats + "seats";
-		new FleetWriter(vehicles.stream()).write(fileNameBase + ".xml.gz");
+		new FleetWriter(vehicles.stream(), new IntegerLoadType("passenger")).write(fileNameBase + ".xml.gz");
 
 		writeVehStartPositionsCSV(vehicles, fileNameBase);
 	}
@@ -266,7 +268,7 @@ public class DrtVehicleCreator {
 
 		}
 		String fileNameBase = vehiclesFilePrefix + amount + "vehicles-" + seats + "seats";
-		new FleetWriter(vehicles.stream()).write(fileNameBase + ".xml.gz");
+		new FleetWriter(vehicles.stream(), new IntegerLoadType("passenger")).write(fileNameBase + ".xml.gz");
 
 		writeVehStartPositionsCSV(vehicles, fileNameBase);
 	}

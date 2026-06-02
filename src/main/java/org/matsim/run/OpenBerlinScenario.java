@@ -72,7 +72,7 @@ public class OpenBerlinScenario extends MATSimApplication {
 	private double bikePce = 0.2;
 
 	public OpenBerlinScenario() {
-		super(String.format("input/v%s/berlin-v%s.config.xml", VERSION, VERSION));
+		super(ConfigUtils.loadConfig(String.format("input/v%s/berlin-v%s.config.xml", VERSION, VERSION)));
 	}
 
 	public static void main(String[] args) {
@@ -92,7 +92,7 @@ public class OpenBerlinScenario extends MATSimApplication {
 
 			// Counts can be scaled with sample size
 			config.counts().setCountsScaleFactor(sampleSize);
-			sw.sampleSize = sampleSize;
+			sw.setSampleSize(sampleSize);
 
 			config.controller().setRunId(sample.adjustName(config.controller().getRunId()));
 			config.controller().setOutputDirectory(sample.adjustName(config.controller().getOutputDirectory()));
