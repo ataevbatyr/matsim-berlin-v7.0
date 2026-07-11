@@ -39,7 +39,8 @@ import java.util.List;
 @CommandLine.Command(header = ":: Open Berlin Scenario ::", version = OpenBerlinScenario.VERSION, mixinStandardHelpOptions = true, showDefaultValues = true)
 public class OpenBerlinScenario extends MATSimApplication {
 
-	public static final String VERSION = "6.4";
+	// changed to version 7.0
+	public static final String VERSION = "7.0";
 	public static final String CRS = "EPSG:25832";
 
 	//	To decrypt hbefa input files set MATSIM_DECRYPTION_PASSWORD as environment variable. ask VSP for access.
@@ -57,8 +58,9 @@ public class OpenBerlinScenario extends MATSimApplication {
 		defaultValue = DefaultPlanStrategiesModule.DefaultSelector.ChangeExpBeta)
 	private String planSelector;
 
+	// changed to 1pct
 	public OpenBerlinScenario() {
-		super(String.format("input/v%s/berlin-v%s.config.xml", VERSION, VERSION));
+		super(String.format("input/v%s/berlin-v%s-1pct.config.xml", VERSION, VERSION));
 	}
 
 	public static void main(String[] args) {
