@@ -19,7 +19,7 @@ import java.util.List;
 
 public class BerlinScenarioRoadPricing extends OpenBerlinScenario {
 
-	private static final String ROAD_PRICING_SHAPEFILE = "input/v6.4/road-pricing/berlin_road_pricing_area.shp";
+	private static final String ROAD_PRICING_SHAPEFILE = "input/v6.4/area/area.shp";
 
 	public static void main(String[] args) {
 		MATSimApplication.execute(BerlinScenarioRoadPricing.class, args);
@@ -63,8 +63,8 @@ public class BerlinScenarioRoadPricing extends OpenBerlinScenario {
 		}
 
 		// Charge 1 monetary unit throughout the simulated day.
-		RoadPricingUtils.createAndAddGeneralCost(roadPricingScheme, 0, 36 * 3600, 1.0);
-		RoadPricingUtils.setType(roadPricingScheme, RoadPricingSchemeImpl.TOLL_TYPE_LINK);
+		RoadPricingUtils.createAndAddGeneralCost(roadPricingScheme, 0, 36 * 3600, 0.00015);
+		RoadPricingUtils.setType(roadPricingScheme, RoadPricingSchemeImpl.TOLL_TYPE_DISTANCE);
 	}
 
 	@Override
