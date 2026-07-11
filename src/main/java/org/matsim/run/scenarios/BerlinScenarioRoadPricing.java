@@ -19,7 +19,7 @@ import java.util.List;
 
 public class BerlinScenarioRoadPricing extends OpenBerlinScenario {
 
-	private static final String ROAD_PRICING_SHAPEFILE = "input/v6.4/area/area.shp";
+	private static final String ROAD_PRICING_SHAPEFILE = "input/v7.0/ring_zone-1pct/ring.shp";
 
 	public static void main(String[] args) {
 		MATSimApplication.execute(BerlinScenarioRoadPricing.class, args);
