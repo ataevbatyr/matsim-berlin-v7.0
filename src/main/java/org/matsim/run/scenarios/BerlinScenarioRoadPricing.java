@@ -30,8 +30,8 @@ public class BerlinScenarioRoadPricing extends OpenBerlinScenario {
 		// Apply the OpenBerlinScenarioConfiguration
 		super.prepareConfig(config);
 
-		config.controller().setLastIteration(0);
-		config.controller().setOutputDirectory("output/berlin-road-pricing");
+		config.controller().setLastIteration(5);
+		config.controller().setOutputDirectory("output/berlin-road-pricing_5iterations");
 		config.controller().setOverwriteFileSetting(OutputDirectoryHierarchy.OverwriteFileSetting.deleteDirectoryIfExists);
 
 		return config;

@@ -14,7 +14,8 @@
 		<param name="outputDirectory" value="./output/berlin-v7.0-1pct"/>
 		<param name="writeEventsInterval" value="100"/>
 		<param name="writePlansInterval" value="100"/>
-		<param name="routingAlgorithmType" value="SpeedyALT"/>
+		<!-- change routingAlgorithmType from SpeedyALT to Dijkstra -->
+		<param name="routingAlgorithmType" value="Dijkstra"/>
 	</module>
 	<module name="global">
 		<param name="coordinateSystem" value="EPSG:25832"/>
@@ -89,7 +90,7 @@
 			<param name="context" value=""/>
 			<param name="mapCenter" value="13.39,52.51"/>
 			<param name="mapZoomLevel" value="9.1"/>
-			<param name="shp" value="./area/area.shp"/>
+			<param name="shp" value="./ring_zone-1pct/ring.shp"/>
 		</parameterset>
 	</module>
 	<module name="transitRouter">
