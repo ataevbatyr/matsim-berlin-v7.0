@@ -27,11 +27,10 @@ public class BerlinScenarioRoadPricing extends OpenBerlinScenario {
 
 	@Override
 	protected Config prepareConfig(Config config) {
-		// Apply the OpenBerlinScenarioConfiguration
 		super.prepareConfig(config);
 
 		config.controller().setLastIteration(5);
-		config.controller().setOutputDirectory("output/berlin-road-pricing_5iterations");
+		config.controller().setOutputDirectory("output/berlin-road-pricing-5-iterations");
 		config.controller().setOverwriteFileSetting(OutputDirectoryHierarchy.OverwriteFileSetting.deleteDirectoryIfExists);
 
 		return config;
@@ -39,7 +38,6 @@ public class BerlinScenarioRoadPricing extends OpenBerlinScenario {
 
 	@Override
 	protected void prepareScenario(Scenario scenario) {
-		// Apply the complete OpenBerlinScenario preparation
 		super.prepareScenario(scenario);
 		RoadPricingSchemeImpl roadPricingScheme = RoadPricingUtils.addOrGetMutableRoadPricingScheme(scenario);
 
@@ -56,13 +54,11 @@ public class BerlinScenarioRoadPricing extends OpenBerlinScenario {
 			boolean fromNodeInside = ShpGeometryUtils.isCoordInGeometries(fromNode.getCoord(), geometries);
 			boolean toNodeInside = ShpGeometryUtils.isCoordInGeometries(toNode.getCoord(), geometries);
 
-			// Only add links whose from-node and to-node are both inside the road-pricing geometry
 			if (!fromNodeInside || !toNodeInside) continue;
 
 			RoadPricingUtils.addLink(roadPricingScheme, link.getId());
 		}
 
-		// Charge 1 monetary unit throughout the simulated day.
 		RoadPricingUtils.createAndAddGeneralCost(roadPricingScheme, 0, 36 * 3600, 0.00015);
 		RoadPricingUtils.setType(roadPricingScheme, RoadPricingSchemeImpl.TOLL_TYPE_DISTANCE);
 	}
